@@ -1,41 +1,43 @@
 # Title
 
 ## Repository
-<Link to your project's public GitHub respository>
+https://github.com/Jlandii/Dog-Fight.git
 
 ## Description
-1-2 sentence description of what it will do and how it relevant to media and digital arts.
+The program will be a game created using Turtle and Pygame. Im going to use my own sprites / artwork for the game.
 
 ## Features
-- Feature 1
-	- Short explaination of how it will be executed.
-- Feature 2
-	- Short explaination of how it will be executed.
-- Feature N 
-	- Short explaination of how it will be executed.
+- A Starship player character
+	- Im going to use turtle and pygame to run the game and give the player inputs, movement, and health.
+- Enemy starships for the player to fight
+	- Im going to create objects / classes that are spawned randomly that will "battle" the player
+- Im going to have a score system and a lives system  
+	- Everytime the player defeats an enemy ship they will game points, if they are hit they will "die", respawn and loose points.
 
 ## Challenges
-- Short sentence of any skill or topic that needs to be learnt or researched.
-- Short sentence of any skill or topic that needs to be learnt or researched.
-- Short sentence of any skill or topic that needs to be learnt or researched.
+- Adding my own sprites / animations
+- Adding things like enemy attacks 
+- Adding more complicated actions for the player like alternate attacks or a speed boost of some kind 
+- Adding powerups or other hazards
 
 ## Outcomes
 Ideal Outcome:
-- Briefly describe what is the ideal outcome?
+- have a game where the player can fly around fighting with enemy AI. They will have access to mulitple forms of weapons and even have ally ships. 
 
 Minimal Viable Outcome:
-- Briefly describe the bare essential for a good working outcome?
+- The player can fly around fighting enemy AI with basic movment and 1 main attack. The enemy AI wont neccesarily attack the player, but the game will have my own art and animations as well as additional hazards.
 
 ## Milestones
 
 - Week 1
-  1. Goal 1
-  2. Goal 2
+  1. Create basic player
+  2. Add basic sprites / visuals
 
 - Week 2
-  1. Goal 1
-  2. Goal 2
+  1. Add basic collision / enemies and allies
+  2. Add attacks
+  3. add sound and particle effects
 
 - Week N (Final)
-  1. Goal 1
-  2. Goal 2
+  1. refine basics / polish game
+  2. add additional hazards, art and powerups
