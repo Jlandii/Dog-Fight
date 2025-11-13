@@ -27,15 +27,30 @@ class Player(Sprite):
         self.speed = 4
         self.lives = 3
 
+    def turn_left(self):
+        self.lt(45)
+    def turn_right(self):
+        self.rt(45)
+
+    def accelerate(self):
+        self.speed += 1
+
+    def decelerate(self):
+        self.speed -= 1
 
 #Create sprites
 player = Player("triangle", "white", 0, 0)
 
+#Keyboard bindings
+turtle.onkey(player.turn_left, "Left")
+turtle.onkey(player.turn_right, "Right")
+turtle.onkey(player.accelerate, "Up")
+turtle.onkey(player.decelerate, "Down")
+turtle.listen() #asks turtle to watch for key pressed events
 
 #Main game loop
 while True:
     player.move()
-
 
 
 
