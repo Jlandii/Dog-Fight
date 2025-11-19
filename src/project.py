@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 import turtle
 turtle.speed(0) #speed of animation
@@ -194,6 +195,7 @@ turtle.listen() #asks turtle to watch for key pressed events
 #Main game loop
 while True:
     turtle.update()
+    time.sleep(0.03)
 
     player.move()
     missile.move()
