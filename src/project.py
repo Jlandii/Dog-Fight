@@ -6,7 +6,7 @@ turtle.speed(0) #speed of animation
 turtle.bgcolor("black")
 turtle.ht() #hides default turtle
 turtle.setundobuffer(1) # limits the amount of memory the turtle module uses
-turtle.tracer(1) #changes speed of animation
+turtle.tracer(0) #changes speed of animation
 
 class Sprite(turtle.Turtle):
     def __init__(self, spriteshape, color, startx, starty):
@@ -171,9 +171,17 @@ game.show_status()
 
 #Create sprites
 player = Player("triangle", "white", 0, 0)
-enemy = Enemy("circle", "red", -100, 0)
+#enemy = Enemy("circle", "red", -100, 0)
 missile = Missile("triangle", "yellow", 0, 0)
-ally = Ally("square", "blue", 0,0)
+#ally = Ally("square", "blue", 100,0)
+
+enemies = []
+for i in range(6):
+    enemies.append(Enemy("circle", "red", -100, 0))
+
+allies = []
+for i in range(6):
+    allies.append(Ally("square", "blue", 100,0))
 
 #Keyboard bindings
 turtle.onkey(player.turn_left, "Left")
@@ -185,44 +193,51 @@ turtle.listen() #asks turtle to watch for key pressed events
 
 #Main game loop
 while True:
+    turtle.update()
+
     player.move()
-    enemy.move()
     missile.move()
-    ally.move()
 
-    #Check for collision with the player
-    if player.is_collision(enemy):
-        # Play explosion sound(UPDATE LATER)
-        #os.system("afplay explosion.mp3&")
-        x = random.randint(-250, 250)
-        y = random.randint(-250, 250)
-        enemy.goto(x, y)
-        game.score -= 100
-        game.show_status()
+    for enemy in enemies:
+        enemy.move()
+    
+        #Check for collision with the player
+        if player.is_collision(enemy):
+            # Play explosion sound(UPDATE LATER)
+            #os.system("afplay explosion.mp3&")
+            x = random.randint(-250, 250)
+            y = random.randint(-250, 250)
+            enemy.goto(x, y)
+            game.score -= 100
+            game.show_status()
 
-    #Check for collision between missile and the enemy
-    if missile.is_collision(enemy):
-        # Play explosion sound(UPDATE LATER)
-        #os.system("afplay explosion.mp3&")
-        x = random.randint(-250, 250)
-        y = random.randint(-250, 250)
-        enemy.goto(x, y)
-        missile.status = "ready"
-        #Increase the score
-        game.score += 100
-        game.show_status()
 
-    #Check for collision between missile and the ally
-    if missile.is_collision(ally):
-        # Play explosion sound(UPDATE LATER)
-        #os.system("afplay explosion.mp3&")
-        x = random.randint(-250, 250)
-        y = random.randint(-250, 250)
-        ally.goto(x, y)
-        missile.status = "ready"
-        #Decrease the score
-        game.score -= 50
-        game.show_status()
+        #Check for collision between missile and the enemy
+        if missile.is_collision(enemy):
+            # Play explosion sound(UPDATE LATER)
+            #os.system("afplay explosion.mp3&")
+            x = random.randint(-250, 250)
+            y = random.randint(-250, 250)
+            enemy.goto(x, y)
+            missile.status = "ready"
+            #Increase the score
+            game.score += 100
+            game.show_status()
+
+    for ally in allies:
+        ally.move()
+
+        #Check for collision between missile and the ally
+        if missile.is_collision(ally):
+            # Play explosion sound(UPDATE LATER)
+            #os.system("afplay explosion.mp3&")
+            x = random.randint(-250, 250)
+            y = random.randint(-250, 250)
+            ally.goto(x, y)
+            missile.status = "ready"
+            #Decrease the score
+            game.score -= 50
+            game.show_status()
 
 
 
