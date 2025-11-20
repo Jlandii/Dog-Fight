@@ -5,9 +5,14 @@ import time
 import turtle
 turtle.speed(0) #speed of animation
 turtle.bgcolor("black")
+#Change window title
+turtle.title("Dog-Fight")
+#Change the background image
+turtle.bgpic("Space bk.gif")
 turtle.ht() #hides default turtle
 turtle.setundobuffer(1) # limits the amount of memory the turtle module uses
 turtle.tracer(0) #changes speed of animation
+
 
 class Sprite(turtle.Turtle):
     def __init__(self, spriteshape, color, startx, starty):
@@ -52,6 +57,7 @@ class Sprite(turtle.Turtle):
 class Player(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
+        self.shapesize(stretch_wid=0.6, stretch_len=1.1, outline=None)
         self.speed = 4
         self.lives = 3
 
@@ -101,7 +107,7 @@ class Ally(Sprite):
 class Missile(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
-        self.shapesize(stretch_wid=0.3, stretch_len=0.4, outline=None)
+        self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
         self.speed = 20
         self.status = "ready"
         self.goto(-1000, 1000) 
@@ -127,9 +133,28 @@ class Missile(Sprite):
             self.ycor() < -290 or self.ycor() > 290:
             self.goto(-1000, 1000)
             self.status = "ready"
-            
 
+class Particle(Sprite):
+    def __init__(self, spriteshape, color, startx, starty):
+        Sprite.__init__(self, spriteshape, color, startx, starty)
+        self.shapesize(stretch_wid=0.1, stretch_len=0.1, outline=None)
+        self.goto(-1000, -1000)
+        self.frame = 0
 
+    def explode(self,starx, starty):
+        self.goto(starx, starty)
+        self.setheading(random.randint(0,360))
+        self.frame = 1
+    
+    def move(self):
+        if self.frame > 0:
+            self.fd(10)
+            self.frame += 1
+
+        if self.frame > 10:
+            self.frame = 0
+            self.goto(-1000, -1000)
+        
 #keeps game information
 class Game():
     def __init__(self):
@@ -157,13 +182,22 @@ class Game():
     def show_status(self):
         self.pen.undo()
         msg = "Score: %s" %(self.score)
+        liv = "Lives: %s" %(self.lives)
         self.pen.penup()
         self.pen.goto(-300, 310)
-        self.pen.write(msg, font =("Arial", 16, "normal"))
+        self.pen.write(msg, font =("Consolas", 16, "normal"))
+        self.pen.penup()
+        self.pen.goto(-220, 310)
+        self.pen.write(liv, font = ("Consolas", 16, "normal"))
+
+    def __str__(self):
+        return f"Score: {self.score}"
+    
+    
 
 #Create Game Object
 game = Game()
-
+print(game)
 #Draw the boarder
 game.draw_border()
 
@@ -184,6 +218,10 @@ allies = []
 for i in range(6):
     allies.append(Ally("square", "blue", 100,0))
 
+particles = []
+for i in range(20):
+    particles.append(Particle("circle", "orange", 0,0))
+
 #Keyboard bindings
 turtle.onkey(player.turn_left, "Left")
 turtle.onkey(player.turn_right, "Right")
@@ -192,56 +230,64 @@ turtle.onkey(player.decelerate, "Down")
 turtle.onkey(missile.fire, "space")
 turtle.listen() #asks turtle to watch for key pressed events
 
-#Main game loop
-while True:
-    turtle.update()
-    time.sleep(0.03)
+def main():
+    #Main game loop
+    while True:
+        turtle.update()
+        time.sleep(0.03)
 
-    player.move()
-    missile.move()
+        player.move()
+        missile.move()
 
-    for enemy in enemies:
-        enemy.move()
-    
-        #Check for collision with the player
-        if player.is_collision(enemy):
-            # Play explosion sound(UPDATE LATER)
-            #os.system("afplay explosion.mp3&")
-            x = random.randint(-250, 250)
-            y = random.randint(-250, 250)
-            enemy.goto(x, y)
-            game.score -= 100
-            game.show_status()
-
-
-        #Check for collision between missile and the enemy
-        if missile.is_collision(enemy):
-            # Play explosion sound(UPDATE LATER)
-            #os.system("afplay explosion.mp3&")
-            x = random.randint(-250, 250)
-            y = random.randint(-250, 250)
-            enemy.goto(x, y)
-            missile.status = "ready"
-            #Increase the score
-            game.score += 100
-            game.show_status()
-
-    for ally in allies:
-        ally.move()
-
-        #Check for collision between missile and the ally
-        if missile.is_collision(ally):
-            # Play explosion sound(UPDATE LATER)
-            #os.system("afplay explosion.mp3&")
-            x = random.randint(-250, 250)
-            y = random.randint(-250, 250)
-            ally.goto(x, y)
-            missile.status = "ready"
-            #Decrease the score
-            game.score -= 50
-            game.show_status()
+        for enemy in enemies:
+            enemy.move()
+        
+            #Check for collision with the player
+            if player.is_collision(enemy):
+                # Play explosion sound(UPDATE LATER)
+                #os.system("afplay explosion.mp3&")
+                x = random.randint(-250, 250)
+                y = random.randint(-250, 250)
+                enemy.goto(x, y)
+                game.score += 50
+                game.show_status()
 
 
+            #Check for collision between missile and the enemy
+            if missile.is_collision(enemy):
+                # Play explosion sound(UPDATE LATER)
+                #os.system("afplay explosion.mp3&")
+                x = random.randint(-250, 250)
+                y = random.randint(-250, 250)
+                enemy.goto(x, y)
+                missile.status = "ready"
+                #Increase the score
+                game.score += 100
+                game.show_status()
+                #Do the explosion
+                for particle in particles:
+                    particle.explode(missile.xcor(), missile.ycor())
+
+        for ally in allies:
+            ally.move()
+
+            #Check for collision between missile and the ally
+            if missile.is_collision(ally):
+                # Play explosion sound(UPDATE LATER)
+                #os.system("afplay explosion.mp3&")
+                x = random.randint(-250, 250)
+                y = random.randint(-250, 250)
+                ally.goto(x, y)
+                missile.status = "ready"
+                #Decrease the score
+                game.score -= 50
+                game.show_status()
+
+        for particle in particles:
+            particle.move()
+
+if __name__ == "__main__":
+    main()
 
 
 
