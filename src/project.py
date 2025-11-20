@@ -13,6 +13,8 @@ turtle.ht() #hides default turtle
 turtle.setundobuffer(1) # limits the amount of memory the turtle module uses
 turtle.tracer(0) #changes speed of animation
 
+#adds player sprite to ship list
+turtle.register_shape("Ship_2.gif")
 
 class Sprite(turtle.Turtle):
     def __init__(self, spriteshape, color, startx, starty):
@@ -57,7 +59,7 @@ class Sprite(turtle.Turtle):
 class Player(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
-        self.shapesize(stretch_wid=0.6, stretch_len=1.1, outline=None)
+        self.shapesize(stretch_wid =1, stretch_len=1, outline=None)
         self.speed = 4
         self.lives = 3
 
@@ -213,6 +215,7 @@ game.show_status()
 
 #Create sprites
 player = Player("triangle", "white", 0, 0)
+player.shape("Ship_2.gif")
 #enemy = Enemy("circle", "red", -100, 0)
 missile = Missile("triangle", "yellow", 0, 0)
 #ally = Ally("square", "blue", 100,0)
