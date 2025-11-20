@@ -162,6 +162,7 @@ class Game():
         self.score = 0
         self.state = "playing"
         self.pen = turtle.Turtle()
+        self.Bpen = turtle.Turtle()
         self.lives = 3
 
     def draw_border(self):
@@ -169,25 +170,27 @@ class Game():
         self.pen.speed(0) #anim speed
         self.pen.color("white")
         self.pen.pensize(3)
-        self.pen.penup()
-        self.pen.goto(-300, 300)
-        self.pen.pendown()
+
+        self.Bpen.speed(0) #anim speed
+        self.Bpen.color("white")
+        self.Bpen.pensize(3)
+        self.Bpen.penup()
+        self.Bpen.goto(-300, 300)
+        self.Bpen.pendown()
         for side in range(4):
-            self.pen.fd(600)
-            self.pen.rt(90)
-        self.pen.penup()
-        self.pen.ht()
-        self.pen.pendown()
+            self.Bpen.fd(600)
+            self.Bpen.rt(90)
+        self.Bpen.penup()
+        self.Bpen.ht()
+        self.Bpen.pendown()
     
     def show_status(self):
-        self.pen.undo()
+        self.pen.clear()
         msg = "Score: %s" %(self.score)
+        liv = "Lives: %s" %(self.lives)
         self.pen.penup()
         self.pen.goto(-300, 310)
         self.pen.write(msg, font =("Courier New", 16, "normal"))
-    def show_liv(self):
-       
-        liv = "Lives: %s" %(self.lives)
         self.pen.penup()
         self.pen.goto(-150, 310)
         self.pen.write(liv, font = ("Courier New", 16, "normal"))
@@ -200,14 +203,13 @@ class Game():
 #Create Game Object
 game = Game()
 print(game)
+
 #Draw the boarder
 game.draw_border()
 
 #show the game status
 game.show_status()
 
-#show the liv
-game.show_liv()
 
 #Create sprites
 player = Player("triangle", "white", 0, 0)
@@ -255,7 +257,8 @@ def main():
                 y = random.randint(-250, 250)
                 enemy.goto(x, y)
                 game.lives -= 1
-                game.show_liv()
+                game.score += 50
+                game.show_status()
 
 
             #Check for collision between missile and the enemy
