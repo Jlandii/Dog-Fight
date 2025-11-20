@@ -182,13 +182,15 @@ class Game():
     def show_status(self):
         self.pen.undo()
         msg = "Score: %s" %(self.score)
-        liv = "Lives: %s" %(self.lives)
         self.pen.penup()
         self.pen.goto(-300, 310)
-        self.pen.write(msg, font =("Consolas", 16, "normal"))
+        self.pen.write(msg, font =("Courier New", 16, "normal"))
+    def show_liv(self):
+       
+        liv = "Lives: %s" %(self.lives)
         self.pen.penup()
-        self.pen.goto(-220, 310)
-        self.pen.write(liv, font = ("Consolas", 16, "normal"))
+        self.pen.goto(-150, 310)
+        self.pen.write(liv, font = ("Courier New", 16, "normal"))
 
     def __str__(self):
         return f"Score: {self.score}"
@@ -203,6 +205,9 @@ game.draw_border()
 
 #show the game status
 game.show_status()
+
+#show the liv
+game.show_liv()
 
 #Create sprites
 player = Player("triangle", "white", 0, 0)
@@ -249,8 +254,8 @@ def main():
                 x = random.randint(-250, 250)
                 y = random.randint(-250, 250)
                 enemy.goto(x, y)
-                game.score += 50
-                game.show_status()
+                game.lives -= 1
+                game.show_liv()
 
 
             #Check for collision between missile and the enemy
@@ -285,7 +290,7 @@ def main():
 
         for particle in particles:
             particle.move()
-
+            
 if __name__ == "__main__":
     main()
 
