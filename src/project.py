@@ -86,6 +86,7 @@ class Enemy(Sprite):
             x = random.randint(-250, 250)
             y = random.randint(-250, 250)
             self.goto(x, y)
+            self.health += 10
 
     
 
@@ -335,8 +336,8 @@ def main():
                 # Play explosion sound(UPDATE LATER)
                 #os.system("afplay explosion.mp3&")
                 enemy.health -= 10
-                print(enemy.health)
-                enemy.death()
+                if enemy.health == 0:
+                    enemy.death()
                 missile.status = "ready"
                 #Increase the score
                 game.score += 100
