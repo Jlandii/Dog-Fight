@@ -5,6 +5,7 @@ https://github.com/Jlandii/Dog-Fight.git
 
 ## Description
 The program will be a game created using Turtle and Pygame. Im going to use my own sprites / artwork for the game.
+Credit to TokyoEdtech (https://www.youtube.com/watch?v=Ak1IDnP5IrI&list=PLlEgNdBJEO-muprNCDYiKLZ-Kc3-p8thS) 
 
 ## Features
 - A Starship player character
