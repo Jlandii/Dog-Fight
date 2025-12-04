@@ -269,7 +269,6 @@ class Game():
 
 #Create Game Object
 game = Game()
-print(game)
 
 #Draw the boarder
 game.draw_border()
@@ -345,20 +344,21 @@ def main():
                 #Do the explosion
                 for particle in particles:
                     particle.explode(missile.xcor(), missile.ycor())
-
-            if bullet.is_collision(enemy):
-                # Play explosion sound(UPDATE LATER)
-                #os.system("afplay explosion.mp3&")
-                enemy.health -= 5
-                print(enemy.health)
-                #Increase the score
-                game.score += 100
-                game.show_status()
-                #Do the explosion
-                if enemy.health == 0:
-                    enemy.death()
-                    for particle in particles:
-                        particle.explode(missile.xcor(), missile.ycor())
+            for bullet in magazine.bullets:
+                if bullet.is_collision(enemy):
+                    # Play explosion sound(UPDATE LATER)
+                    #os.system("afplay explosion.mp3&")
+                    enemy.health -= 5
+                    print(enemy.health)
+                    bullet.goto(1000,1000)
+                    #Increase the score
+                    game.score += 50
+                    game.show_status()
+                    if enemy.health == 0:
+                        for particle in particles:
+                            particle.explode(enemy.xcor(), enemy.ycor())
+                        enemy.death()
+                        
 
         for ally in allies:
             ally.move()
