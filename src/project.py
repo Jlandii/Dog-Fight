@@ -30,20 +30,20 @@ class Sprite(turtle.Turtle):
         self.fd(self.speed)
 
         #Boundary detection (collision)
-        if self.xcor() > 290:
-            self.setx(290)
+        if self.xcor() > 440:
+            self.setx(440)
             self.rt(60)
 
-        if self.xcor() < -290:
-            self.setx(-290)
+        if self.xcor() < -440:
+            self.setx(-440)
             self.rt(60)
 
-        if self.ycor() > 290:
-            self.sety(290)
+        if self.ycor() > 440:
+            self.sety(440)
             self.rt(60)
 
-        if self.ycor() < -290:
-            self.sety(-290)
+        if self.ycor() < -440:
+            self.sety(-440)
             self.rt(60)
 
 
@@ -90,20 +90,20 @@ class Ally(Sprite):
         self.fd(self.speed)
 
         #Boundary detection (collision)
-        if self.xcor() > 290:
-            self.setx(290)
+        if self.xcor() > 440:
+            self.setx(440)
             self.lt(60)
 
-        if self.xcor() < -290:
-            self.setx(-290)
+        if self.xcor() < -440:
+            self.setx(-440)
             self.lt(60)
 
-        if self.ycor() > 290:
-            self.sety(290)
+        if self.ycor() > 440:
+            self.sety(440)
             self.lt(60)
 
-        if self.ycor() < -290:
-            self.sety(-290)
+        if self.ycor() < -440:
+            self.sety(-440)
             self.lt(60)
 
 class Missile(Sprite):
@@ -131,10 +131,73 @@ class Missile(Sprite):
             self.fd(self.speed)
 
         #Border check
-        if self.xcor() < -290 or self.xcor() > 290 or \
-            self.ycor() < -290 or self.ycor() > 290:
-            self.goto(-1000, 1000)
+        if self.xcor() < -440 or self.xcor() > 440 or \
+            self.ycor() < -440 or self.ycor() > 440:
             self.status = "ready"
+
+class Bullet(Sprite):
+    def __init__(self, spriteshape, color, startx, starty):
+        Sprite.__init__(self, spriteshape, color, startx, starty)
+        self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
+        self.speed = 20
+        self.mag = 20
+        self.status = "ready"
+        self.goto(-1000, 1000) 
+
+    def fire(self):
+        if self.mag > 0:
+            self.status = "ready"
+        if self.status == "ready":
+            #Player missile sound (UPDATE LATER)
+            #os.system("afplay laser.mp3&")
+            self.goto(player.xcor(), player.ycor())
+            self.setheading(player.heading())
+            self.status = "firing"
+
+    def move(self):
+        
+        if self.status == "ready":
+            self.goto(-1000, 1000) 
+
+        if self.status == "firing":
+            self.fd(self.speed)
+            self.mag -=1
+
+        #Border check
+        if self.xcor() < -440 or self.xcor() > 440 or \
+            self.ycor() < -440 or self.ycor() > 440:
+            self.status = "ready"
+            self.mag += 1
+
+class EMissile(Sprite):
+    def __init__(self, spriteshape, color, startx, starty):
+        Sprite.__init__(self, spriteshape, color, startx, starty)
+        self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
+        self.speed = 20
+        self.status = "ready"
+        self.goto(-1000, 1000) 
+
+    def fire(self):
+        if self.status == "ready":
+            #Player missile sound (UPDATE LATER)
+            #os.system("afplay laser.mp3&")
+            self.goto(player.xcor(), player.ycor())
+            self.setheading(player.heading())
+            self.status = "firing"
+
+    def move(self):
+        
+        if self.status == "ready":
+            self.goto(-1000, 1000) 
+
+        if self.status == "firing":
+            self.fd(self.speed)
+
+        #Border check
+        if self.xcor() < -440 or self.xcor() > 440 or \
+            self.ycor() < -440 or self.ycor() > 440:
+            self.status = "ready"
+
 
 class Particle(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
@@ -177,10 +240,10 @@ class Game():
         self.Bpen.color("white")
         self.Bpen.pensize(3)
         self.Bpen.penup()
-        self.Bpen.goto(-300, 300)
+        self.Bpen.goto(-450, 450)
         self.Bpen.pendown()
         for side in range(4):
-            self.Bpen.fd(600)
+            self.Bpen.fd(900)
             self.Bpen.rt(90)
         self.Bpen.penup()
         self.Bpen.ht()
@@ -191,10 +254,10 @@ class Game():
         msg = "Score: %s" %(self.score)
         liv = "Lives: %s" %(self.lives)
         self.pen.penup()
-        self.pen.goto(-300, 310)
+        self.pen.goto(-450, 460)
         self.pen.write(msg, font =("Courier New", 16, "normal"))
         self.pen.penup()
-        self.pen.goto(-150, 310)
+        self.pen.goto(-300, 460)
         self.pen.write(liv, font = ("Courier New", 16, "normal"))
 
     def __str__(self):
@@ -216,28 +279,33 @@ game.show_status()
 #Create sprites
 player = Player("triangle", "white", 0, 0)
 player.shape("Ship_2.gif")
-#enemy = Enemy("circle", "red", -100, 0)
 missile = Missile("triangle", "yellow", 0, 0)
-#ally = Ally("square", "blue", 100,0)
+bullet = Bullet("square", "yellow", 0, 0)
+emissile = EMissile("square", "green", 0,0)
 
 enemies = []
-for i in range(6):
+for i in range(8):
     enemies.append(Enemy("circle", "red", -100, 0))
 
 allies = []
-for i in range(6):
+for i in range(5):
     allies.append(Ally("square", "blue", 100,0))
 
 particles = []
 for i in range(20):
     particles.append(Particle("circle", "orange", 0,0))
 
+bullets = []
+for i in range(20):
+    bullets.append(bullet)
+
 #Keyboard bindings
-turtle.onkey(player.turn_left, "Left")
-turtle.onkey(player.turn_right, "Right")
+turtle.onkeypress(player.turn_left, "Left")
+turtle.onkeypress(player.turn_right, "Right")
 turtle.onkey(player.accelerate, "Up")
-turtle.onkey(player.decelerate, "Down")
+turtle.onkeypress(player.decelerate, "Down")
 turtle.onkey(missile.fire, "space")
+turtle.onkey(bullet.fire, "b")
 turtle.listen() #asks turtle to watch for key pressed events
 
 def main():
@@ -248,6 +316,7 @@ def main():
 
         player.move()
         missile.move()
+        bullet.move()
 
         for enemy in enemies:
             enemy.move()
@@ -293,9 +362,12 @@ def main():
                 #Decrease the score
                 game.score -= 50
                 game.show_status()
+                for particle in particles:
+                    particle.explode(missile.xcor(), missile.ycor())
 
         for particle in particles:
             particle.move()
+
             
 if __name__ == "__main__":
     main()
