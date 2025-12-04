@@ -140,40 +140,6 @@ class Bullet(Sprite):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
         self.speed = 20
-        self.mag = 20
-        self.status = "ready"
-        self.goto(-1000, 1000) 
-
-    def fire(self):
-        if self.mag > 0:
-            self.status = "ready"
-        if self.status == "ready":
-            #Player missile sound (UPDATE LATER)
-            #os.system("afplay laser.mp3&")
-            self.goto(player.xcor(), player.ycor())
-            self.setheading(player.heading())
-            self.status = "firing"
-
-    def move(self):
-        
-        if self.status == "ready":
-            self.goto(-1000, 1000) 
-
-        if self.status == "firing":
-            self.fd(self.speed)
-            self.mag -=1
-
-        #Border check
-        if self.xcor() < -440 or self.xcor() > 440 or \
-            self.ycor() < -440 or self.ycor() > 440:
-            self.status = "ready"
-            self.mag += 1
-
-class EMissile(Sprite):
-    def __init__(self, spriteshape, color, startx, starty):
-        Sprite.__init__(self, spriteshape, color, startx, starty)
-        self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
-        self.speed = 20
         self.status = "ready"
         self.goto(-1000, 1000) 
 
@@ -197,6 +163,32 @@ class EMissile(Sprite):
         if self.xcor() < -440 or self.xcor() > 440 or \
             self.ycor() < -440 or self.ycor() > 440:
             self.status = "ready"
+
+class Magazine():
+    def __init__(self, player, max_bullets=20, reload_time=2.0):
+        self.max_bullets = max_bullets
+        self.player = player
+        self.bullets = [Bullet("square", "yellow", 0, 0) for _ in range(max_bullets)]
+        self.bullets_left = max_bullets
+        # The next_bullet_index helps us implement the object pool
+        self.next_bullet_index = 0
+
+    def shoot(self):
+        """Shoots the next available bullet if not reloading."""
+        if self.bullets_left > 0:
+            # 1. Get the next bullet from the pool
+            current_bullet = self.bullets[self.next_bullet_index]
+            
+            # 2. Fire the bullet
+            current_bullet.fire()
+            
+            # 3. Update the magazine state
+            self.bullets_left -= 1
+            self.next_bullet_index = (self.next_bullet_index + 1) % self.max_bullets
+
+            # # 4. Check if we need to reload
+            if self.bullets_left == 0:
+                self.bullets_left += 20
 
 
 class Particle(Sprite):
@@ -278,10 +270,9 @@ game.show_status()
 
 #Create sprites
 player = Player("triangle", "white", 0, 0)
+magazine = Magazine(player)
 player.shape("Ship_2.gif")
 missile = Missile("triangle", "yellow", 0, 0)
-bullet = Bullet("square", "yellow", 0, 0)
-emissile = EMissile("square", "green", 0,0)
 
 enemies = []
 for i in range(8):
@@ -295,9 +286,6 @@ particles = []
 for i in range(20):
     particles.append(Particle("circle", "orange", 0,0))
 
-bullets = []
-for i in range(20):
-    bullets.append(bullet)
 
 #Keyboard bindings
 turtle.onkeypress(player.turn_left, "Left")
@@ -305,7 +293,7 @@ turtle.onkeypress(player.turn_right, "Right")
 turtle.onkey(player.accelerate, "Up")
 turtle.onkeypress(player.decelerate, "Down")
 turtle.onkey(missile.fire, "space")
-turtle.onkey(bullet.fire, "b")
+turtle.onkeypress(magazine.shoot, "b")
 turtle.listen() #asks turtle to watch for key pressed events
 
 def main():
@@ -316,7 +304,7 @@ def main():
 
         player.move()
         missile.move()
-        bullet.move()
+
 
         for enemy in enemies:
             enemy.move()
