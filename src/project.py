@@ -79,6 +79,7 @@ class Enemy(Sprite):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.speed = 6
         self.health = 10
+        self.timebetweenshots = 10
         self.setheading(random.randint(0,360))
 
 
@@ -88,9 +89,37 @@ class Enemy(Sprite):
             self.goto(x, y)
             self.health += 10
 
-    #add function that uses either a random number or a timer to let the enemies shoot
-    #make it to where the enemy cant shoot until the bullet hits the wall/ resets
-    
+        
+   
+class Emissile(Sprite):
+    def __init__(self, spriteshape, color, startx, starty, enemy):
+        Sprite.__init__(self, spriteshape, color, startx, starty)
+        self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
+        self.enemy = enemy
+        self.speed = 20
+        self.status = "ready"
+        self.goto(-1000, 1000) 
+
+    def fire(self):
+        if self.status == "ready":
+            #Player missile sound (UPDATE LATER)
+            #os.system("afplay laser.mp3&")
+            self.goto(self.enemy.xcor(), self.enemy.ycor())
+            self.setheading(self.enemy.heading())
+            self.status = "firing"
+
+    def move(self):
+        
+        if self.status == "ready":
+            self.goto(-1000, 1000) 
+
+        if self.status == "firing":
+            self.fd(self.speed)
+
+        #Border check
+        if self.xcor() < -440 or self.xcor() > 440 or \
+            self.ycor() < -440 or self.ycor() > 440:
+            self.status = "ready"
 
 class Ally(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
@@ -184,16 +213,14 @@ class Bullet(Sprite):
             self.status = "ready"
 
 class Magazine():
-    def __init__(self, player, max_bullets=20):
+    def __init__(self, max_bullets=20):
         self.max_bullets = max_bullets
-        self.player = player
         self.bullets = [Bullet("square", "yellow", 0, 0) for _ in range(max_bullets)]
         self.bullets_left = max_bullets
         # The next_bullet_index helps us implement the object pool
         self.next_bullet_index = 0
 
     def shoot(self):
-        """Shoots the next available bullet if not reloading."""
         if self.bullets_left > 0:
             # 1. Get the next bullet from the pool
             current_bullet = self.bullets[self.next_bullet_index]
@@ -287,13 +314,20 @@ game.show_status()
 
 #Create sprites
 player = Player("triangle", "white", 0, 0)
-magazine = Magazine(player)
+magazine = Magazine()
 player.shape("Ship_2.gif")
 missile = Missile("triangle", "yellow", 0, 0)
+
+
+
 
 enemies = []
 for i in range(8):
     enemies.append(Enemy("circle", "red", -100, 0))
+
+enemy_missiles = []
+for i in range(8):
+    enemy_missiles.append(Emissile("triangle", "green", 0,0, enemies))
 
 allies = []
 for i in range(5):
@@ -326,6 +360,11 @@ def main():
 
         for enemy in enemies:
             enemy.move()
+            enemy.cooldown()
+
+            fire_odds = random.randrange(0,7)
+            if fire_odds > 6:
+                enemy.eshoot()
         
             #Check for collision with the player
             if player.is_collision(enemy):
