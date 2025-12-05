@@ -88,12 +88,15 @@ class Enemy(Sprite):
             self.goto(x, y)
             self.health += 10
 
+    #add function that uses either a random number or a timer to let the enemies shoot
+    #make it to where the enemy cant shoot until the bullet hits the wall/ resets
     
 
 class Ally(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.speed = 8
+        self.health = 10
         self.setheading(random.randint(0,360))
 
     def move(self):
@@ -115,6 +118,12 @@ class Ally(Sprite):
         if self.ycor() < -440:
             self.sety(-440)
             self.lt(60)
+
+    def death(self):
+        x = random.randint(-250, 250)
+        y = random.randint(-250, 250)
+        self.goto(x, y)
+        self.health += 10
 
 class Missile(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
@@ -335,7 +344,7 @@ def main():
                 # Play explosion sound(UPDATE LATER)
                 #os.system("afplay explosion.mp3&")
                 enemy.health -= 10
-                if enemy.health == 0:
+                if enemy.health <= 0:
                     enemy.death()
                 missile.status = "ready"
                 #Increase the score
@@ -344,17 +353,19 @@ def main():
                 #Do the explosion
                 for particle in particles:
                     particle.explode(missile.xcor(), missile.ycor())
+
+            #Check for collision between bullets and the enemy
             for bullet in magazine.bullets:
                 if bullet.is_collision(enemy):
                     # Play explosion sound(UPDATE LATER)
                     #os.system("afplay explosion.mp3&")
-                    enemy.health -= 5
+                    enemy.health -= 3.5
                     print(enemy.health)
                     bullet.goto(1000,1000)
                     #Increase the score
                     game.score += 50
                     game.show_status()
-                    if enemy.health == 0:
+                    if enemy.health <= 0:
                         for particle in particles:
                             particle.explode(enemy.xcor(), enemy.ycor())
                         enemy.death()
@@ -367,15 +378,32 @@ def main():
             if missile.is_collision(ally):
                 # Play explosion sound(UPDATE LATER)
                 #os.system("afplay explosion.mp3&")
-                x = random.randint(-250, 250)
-                y = random.randint(-250, 250)
-                ally.goto(x, y)
+                ally.health -= 10
+                if ally.health <= 0:
+                    ally.death()
                 missile.status = "ready"
-                #Decrease the score
-                game.score -= 50
+                #Increase the score
+                game.score += 100
                 game.show_status()
+                #Do the explosion
                 for particle in particles:
                     particle.explode(missile.xcor(), missile.ycor())
+
+            #Check for collision between bullets and the ally
+            for bullet in magazine.bullets:
+                if bullet.is_collision(ally):
+                    # Play explosion sound(UPDATE LATER)
+                    #os.system("afplay explosion.mp3&")
+                    ally.health -= 3.5
+                    bullet.goto(1000,1000)
+                    #Increase the score
+                    game.score += 50
+                    game.show_status()
+                    if ally.health <= 0:
+                        for particle in particles:
+                            particle.explode(ally.xcor(), ally.ycor())
+                        ally.death()
+
 
         for particle in particles:
             particle.move()
