@@ -89,7 +89,8 @@ class Enemy(Sprite):
             self.goto(x, y)
             self.health += 10
 
-        
+    def eshoot():
+        emissile.fire()
    
 class Emissile(Sprite):
     def __init__(self, spriteshape, color, startx, starty, enemy):
