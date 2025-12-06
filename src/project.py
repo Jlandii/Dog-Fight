@@ -92,7 +92,7 @@ class Emissile(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
-        self.speed = 20
+        self.speed = 5
         self.status = "ready"
         self.goto(-1000, 1000) 
 
@@ -379,15 +379,14 @@ def main():
         for enemy_mis in enemy_mag.enemy_missiles:
             enemy_mis.move()
 
-        rand_chance = random.randrange(0,7)
-        print(rand_chance)
-        if rand_chance == 6:
-            enemy_mag.shoot()    
         #enemy functions in main
         for enemy in enemies:
             enemy.move()
 
-        
+            rand_chance = random.randrange(0,7)
+            print(rand_chance)
+            if rand_chance == 6:
+                enemy_mag.shoot() 
             #Check for collision with the player
             if player.is_collision(enemy):
                 # Play explosion sound(UPDATE LATER)
