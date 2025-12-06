@@ -79,7 +79,6 @@ class Enemy(Sprite):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.speed = 6
         self.health = 10
-        self.timebetweenshots = 10
         self.setheading(random.randint(0,360))
 
 
@@ -88,15 +87,11 @@ class Enemy(Sprite):
             y = random.randint(-250, 250)
             self.goto(x, y)
             self.health += 10
-
-    def eshoot():
-        emissile.fire()
    
 class Emissile(Sprite):
-    def __init__(self, spriteshape, color, startx, starty, enemy):
+    def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
-        self.enemy = enemy
         self.speed = 20
         self.status = "ready"
         self.goto(-1000, 1000) 
@@ -105,15 +100,15 @@ class Emissile(Sprite):
         if self.status == "ready":
             #Player missile sound (UPDATE LATER)
             #os.system("afplay laser.mp3&")
-            self.goto(self.enemy.xcor(), self.enemy.ycor())
-            self.setheading(self.enemy.heading())
+            self.goto(Enemy.xcor(self), Enemy.ycor(self))
+            self.setheading(Enemy.heading(self))
             self.status = "firing"
 
     def move(self):
         
         if self.status == "ready":
             self.goto(-1000, 1000) 
-
+    
         if self.status == "firing":
             self.fd(self.speed)
 
@@ -121,6 +116,30 @@ class Emissile(Sprite):
         if self.xcor() < -440 or self.xcor() > 440 or \
             self.ycor() < -440 or self.ycor() > 440:
             self.status = "ready"
+
+class Enemy_magazine():
+    def __init__(self, max_missiles=8):
+        self.max_missiles = max_missiles
+        self.enemy_missiles = [Emissile("triangle", "green", 0,0) for _ in range(8)]
+        self.missiles_left = max_missiles
+        # The next_missile_index helps us implement the object pool
+        self.next_missile_index = 0
+
+    def shoot(self):
+        if self.missiles_left > 0:
+            # 1. Get the next missile from the pool
+            current_missile = self.enemy_missiles[self.next_missile_index]
+            
+            # 2. Fire the missile
+            current_missile.fire()
+            print("tried to shoot")
+            # 3. Update the magazine state
+            self.missiles_left -= 1
+            self.next_missile_index = (self.next_missile_index + 1) % self.max_missiles
+
+            # # 4. Check if we need to reload
+            if self.missiles_left == 0:
+                self.missiles_left += 8
 
 class Ally(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
@@ -316,19 +335,14 @@ game.show_status()
 #Create sprites
 player = Player("triangle", "white", 0, 0)
 magazine = Magazine()
+enemy_mag = Enemy_magazine()
 player.shape("Ship_2.gif")
 missile = Missile("triangle", "yellow", 0, 0)
-
-
 
 
 enemies = []
 for i in range(8):
     enemies.append(Enemy("circle", "red", -100, 0))
-
-enemy_missiles = []
-for i in range(8):
-    enemy_missiles.append(Emissile("triangle", "green", 0,0, enemies))
 
 allies = []
 for i in range(5):
@@ -354,18 +368,25 @@ def main():
         turtle.update()
         time.sleep(0.03)
 
+
+        #player functions in main
         player.move()
         missile.move()
         for bullet in magazine.bullets:
             bullet.move()
 
+        #enemy missile functions in main
+        for enemy_mis in enemy_mag.enemy_missiles:
+            enemy_mis.move()
+
+        rand_chance = random.randrange(0,7)
+        print(rand_chance)
+        if rand_chance == 6:
+            enemy_mag.shoot()    
+        #enemy functions in main
         for enemy in enemies:
             enemy.move()
-            enemy.cooldown()
 
-            fire_odds = random.randrange(0,7)
-            if fire_odds > 6:
-                enemy.eshoot()
         
             #Check for collision with the player
             if player.is_collision(enemy):
@@ -400,7 +421,6 @@ def main():
                     # Play explosion sound(UPDATE LATER)
                     #os.system("afplay explosion.mp3&")
                     enemy.health -= 3.5
-                    print(enemy.health)
                     bullet.goto(1000,1000)
                     #Increase the score
                     game.score += 50
