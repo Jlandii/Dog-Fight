@@ -1,5 +1,6 @@
 import os
 import random
+import math
 import time
 
 import turtle
@@ -14,7 +15,7 @@ turtle.setundobuffer(1) # limits the amount of memory the turtle module uses
 turtle.tracer(0) #changes speed of animation
 
 #adds player sprite to ship list
-turtle.register_shape("Ship_2.gif")
+turtle.register_shape("meteor.gif")
 
 class Sprite(turtle.Turtle):
     def __init__(self, spriteshape, color, startx, starty):
@@ -59,9 +60,9 @@ class Sprite(turtle.Turtle):
 class Player(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
-        self.shapesize(stretch_wid =1, stretch_len=1, outline=None)
+        self.shapesize(stretch_wid =0.6, stretch_len=1.2, outline=None)
         self.speed = 4
-        self.health = 3
+        self.health = 5
         self.lives = 3
 
     def turn_left(self):
@@ -97,7 +98,7 @@ class Emissile(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.shapesize(stretch_wid=0.4, stretch_len=0.8, outline=None)
-        self.speed = 20
+        self.speed = 15
         self.status = "ready"
         self.goto(-1000, 1000) 
 
@@ -258,6 +259,16 @@ class Magazine():
             if self.bullets_left == 0:
                 self.bullets_left += 20
 
+class Meteor(Sprite):
+    def __init__(self, spriteshape, color, startx, starty):
+        Sprite.__init__(self, spriteshape, color, startx, starty)
+        self.goto(-1000, 1000)
+        self.random_x = random.randrange(-400, 400)
+        self.random_y = random.randrange(-400,400)
+
+    def rand_position(self):
+        self.goto(self.random_x, self.random_y)
+
 
 class Particle(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
@@ -322,8 +333,6 @@ class Game():
 
     def __str__(self):
         return f"Score: {self.score}"
-    
-    
 
 #Create Game Object
 game = Game()
@@ -342,16 +351,20 @@ missile = Missile("triangle", "yellow", 0, 0)
 
 
 enemies = []
-for i in range(8):
+for i in range(6):
     enemies.append(Enemy("circle", "red", -100, 0))
 
 allies = []
-for i in range(5):
+for i in range(4):
     allies.append(Ally("square", "blue", 100,0))
 
 particles = []
 for i in range(20):
     particles.append(Particle("circle", "orange", 0,0))
+
+meteors = []
+for i in range (4):
+    meteors.append(Meteor("meteor.gif", "burlywood4", 0,0))
 
 
 #Keyboard bindings
@@ -364,6 +377,7 @@ turtle.onkeypress(magazine.shoot, "b")
 turtle.listen() #asks turtle to watch for key pressed events
 
 def main():
+
     #Main game loop
     while True:
         turtle.update()
@@ -382,10 +396,19 @@ def main():
 
             if enemy_mis.is_collision(player):
                 player.health -= 1
+                enemy_mis.status = "ready"
                 if player.health <= 0:
                     player.player_death()
-                    print(game.lives)
                     game.show_status()
+
+            for ally in allies:
+                if enemy_mis.is_collision(ally):
+                    enemy_mis.status = "ready"
+                    ally.health -= 10
+                    for particle in particles:
+                        particle.explode(ally.xcor(), ally.ycor())
+                    if ally.health <= 0:
+                        ally.death()
 
         #enemy functions in main
         for enemy in enemies:
@@ -402,7 +425,6 @@ def main():
                 player.health -= 1
                 if player.health <= 0:
                     player.player_death()
-                    print(game.lives)
                 game.score += 50
                 game.show_status()
 
@@ -432,6 +454,29 @@ def main():
                         for particle in particles:
                             particle.explode(enemy.xcor(), enemy.ycor())
                         enemy.death()
+
+                
+        
+        for meteor in meteors:
+            meteor.rand_position()
+
+            if missile.is_collision(meteor):
+                missile.status = "ready"
+
+            if player.is_collision(meteor):
+                player.rt(60)
+            for enemy in enemies:
+                if enemy.is_collision(meteor):
+                    enemy.rt(60)
+            for enemy_mis in enemy_mag.enemy_missiles:
+                if enemy_mis.is_collision(meteor):
+                    enemy_mis.status = "ready"
+
+            for ally in allies:
+                if ally.is_collision(meteor):
+                    ally.rt(90)
+
+            
                         
 
         for ally in allies:
@@ -446,7 +491,7 @@ def main():
                     ally.death()
                 missile.status = "ready"
                 #Increase the score
-                game.score += 100
+                game.score -= 100
                 game.show_status()
                 #Do the explosion
                 for particle in particles:
