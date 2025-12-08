@@ -61,6 +61,7 @@ class Player(Sprite):
         Sprite.__init__(self, spriteshape, color, startx, starty)
         self.shapesize(stretch_wid =1, stretch_len=1, outline=None)
         self.speed = 4
+        self.health = 3
         self.lives = 3
 
     def turn_left(self):
@@ -73,6 +74,10 @@ class Player(Sprite):
 
     def decelerate(self):
         self.speed -= 1
+
+    def player_death(self):
+        game.lives -= 1
+        self.health + 3
 
 class Enemy(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
@@ -91,17 +96,15 @@ class Enemy(Sprite):
 class Emissile(Sprite):
     def __init__(self, spriteshape, color, startx, starty):
         Sprite.__init__(self, spriteshape, color, startx, starty)
-        self.shapesize(stretch_wid=0.2, stretch_len=0.4, outline=None)
-        self.speed = 5
+        self.shapesize(stretch_wid=0.4, stretch_len=0.8, outline=None)
+        self.speed = 20
         self.status = "ready"
         self.goto(-1000, 1000) 
 
-    def fire(self):
+    def fire(self, firing_enemy):
         if self.status == "ready":
-            #Player missile sound (UPDATE LATER)
-            #os.system("afplay laser.mp3&")
-            self.goto(Enemy.xcor(self), Enemy.ycor(self))
-            self.setheading(Enemy.heading(self))
+            self.goto(firing_enemy.xcor(), firing_enemy.ycor())
+            self.setheading(firing_enemy.heading())
             self.status = "firing"
 
     def move(self):
@@ -120,19 +123,18 @@ class Emissile(Sprite):
 class Enemy_magazine():
     def __init__(self, max_missiles=8):
         self.max_missiles = max_missiles
-        self.enemy_missiles = [Emissile("triangle", "green", 0,0) for _ in range(8)]
+        self.enemy_missiles = [Emissile("triangle", "lightgreen", 0,0) for _ in range(8)]
         self.missiles_left = max_missiles
         # The next_missile_index helps us implement the object pool
         self.next_missile_index = 0
 
-    def shoot(self):
+    def shoot(self, firing_enemy):
         if self.missiles_left > 0:
             # 1. Get the next missile from the pool
             current_missile = self.enemy_missiles[self.next_missile_index]
             
             # 2. Fire the missile
-            current_missile.fire()
-            print("tried to shoot")
+            current_missile.fire(firing_enemy)
             # 3. Update the magazine state
             self.missiles_left -= 1
             self.next_missile_index = (self.next_missile_index + 1) % self.max_missiles
@@ -336,7 +338,6 @@ game.show_status()
 player = Player("triangle", "white", 0, 0)
 magazine = Magazine()
 enemy_mag = Enemy_magazine()
-player.shape("Ship_2.gif")
 missile = Missile("triangle", "yellow", 0, 0)
 
 
@@ -379,30 +380,35 @@ def main():
         for enemy_mis in enemy_mag.enemy_missiles:
             enemy_mis.move()
 
+            if enemy_mis.is_collision(player):
+                player.health -= 1
+                if player.health <= 0:
+                    player.player_death()
+                    print(game.lives)
+                    game.show_status()
+
         #enemy functions in main
         for enemy in enemies:
             enemy.move()
 
-            rand_chance = random.randrange(0,7)
-            print(rand_chance)
-            if rand_chance == 6:
-                enemy_mag.shoot() 
+            rand_chance = random.randrange(0,50)
+            if rand_chance == 1:
+                enemy_mag.shoot(enemy) 
             #Check for collision with the player
             if player.is_collision(enemy):
-                # Play explosion sound(UPDATE LATER)
-                #os.system("afplay explosion.mp3&")
-                x = random.randint(-250, 250)
-                y = random.randint(-250, 250)
-                enemy.goto(x, y)
-                game.lives -= 1
+                enemy.health -= 10
+                if enemy.health <= 0:
+                    enemy.death()
+                player.health -= 1
+                if player.health <= 0:
+                    player.player_death()
+                    print(game.lives)
                 game.score += 50
                 game.show_status()
 
 
             #Check for collision between missile and the enemy
             if missile.is_collision(enemy):
-                # Play explosion sound(UPDATE LATER)
-                #os.system("afplay explosion.mp3&")
                 enemy.health -= 10
                 if enemy.health <= 0:
                     enemy.death()
@@ -417,8 +423,6 @@ def main():
             #Check for collision between bullets and the enemy
             for bullet in magazine.bullets:
                 if bullet.is_collision(enemy):
-                    # Play explosion sound(UPDATE LATER)
-                    #os.system("afplay explosion.mp3&")
                     enemy.health -= 3.5
                     bullet.goto(1000,1000)
                     #Increase the score
@@ -462,7 +466,6 @@ def main():
                         for particle in particles:
                             particle.explode(ally.xcor(), ally.ycor())
                         ally.death()
-
 
         for particle in particles:
             particle.move()
